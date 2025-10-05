@@ -10,7 +10,7 @@ import java.io.IOException;
 public class PriceTesting {
 
     public static void main(String[] args) {
-        String excelFilePath = "src/main/resources/boundary_value_testing.xlsx";
+        String excelFilePath = "src/main/resources/c2_testing.xlsx";
 
         try (FileInputStream fis = new FileInputStream(excelFilePath);
              Workbook workbook = new XSSFWorkbook(fis)) {
@@ -30,11 +30,37 @@ public class PriceTesting {
                 if (row == null) continue;
 
                 try {
-                    int tuoi = (int) row.getCell(1).getNumericCellValue();
-                    String ngay = row.getCell(2).getStringCellValue();
-                    boolean laHocSinh = row.getCell(3).getBooleanCellValue();
-                    boolean laThanhVien = row.getCell(4).getBooleanCellValue();
-                    int expected = (int) row.getCell(5).getNumericCellValue();
+                    int tuoi = 0;
+                    Cell tuoiCell = row.getCell(1);
+                    if (tuoiCell != null && tuoiCell.getCellType() == CellType.NUMERIC) {
+                        tuoi = (int) tuoiCell.getNumericCellValue();
+                    }
+
+                    String ngay = null;
+                    Cell ngayCell = row.getCell(2);
+                    if (ngayCell != null) {
+                        ngay = ngayCell.toString().trim();
+                    }
+
+                    boolean laHocSinh = false;
+                    Cell hsCell = row.getCell(3);
+                    if (hsCell != null) {
+                        String val = hsCell.toString().trim();
+                        laHocSinh = val.equalsIgnoreCase("TRUE") || val.equals("1");
+                    }
+
+                    boolean laThanhVien = false;
+                    Cell tvCell = row.getCell(4);
+                    if (tvCell != null) {
+                        String val = tvCell.toString().trim();
+                        laThanhVien = val.equalsIgnoreCase("TRUE") || val.equals("1");
+                    }
+
+                    int expected = 0;
+                    Cell expCell = row.getCell(5);
+                    if (expCell != null && expCell.getCellType() == CellType.NUMERIC) {
+                        expected = (int) expCell.getNumericCellValue();
+                    }
 
                     int giaVe = MovieTicket.tinhGiaVe(tuoi, ngay, laHocSinh, laThanhVien);
                     String result = (giaVe == expected) ? "PASS" : "FAILED";
@@ -63,11 +89,11 @@ public class PriceTesting {
                 }
             }
 
-            try (FileOutputStream fos = new FileOutputStream(excelFilePath)) {
+            try (FileOutputStream fos = new FileOutputStream("src/main/resources/c2_testing_result.xlsx")) {
                 workbook.write(fos);
             }
 
-            System.out.println("Kết quả đã được ghi đè vào " + excelFilePath);
+            System.out.println("Kết quả đã được ghi vào src/main/resources/c2_testing_result.xlsx");
 
         } catch (IOException e) {
             e.printStackTrace();
